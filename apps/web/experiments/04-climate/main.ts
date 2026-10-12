@@ -84,7 +84,9 @@ function render(b: Bundle, source: 'api' | 'static') {
     (b.sample
       ? `Bu sürüm sentetik örnek veri gösteriyor (mevsimsel dalga + trend + gürültü); gerçek veri <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo</a>'dan çekildiğinde değişir. `
       : `Veri: <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo Historical Weather API</a> (${b.model}), ` +
-        `Copernicus Climate Change Service bilgileri kullanılarak üretilmiştir. `) +
+        `Copernicus Climate Change Service bilgileri kullanılarak üretilmiştir. ` +
+        `Değerler yaklaşık 25 km'lik bir ızgara hücresinin ortalamasıdır, tek bir istasyonun ölçümü değildir; ` +
+        `1940'lar az gözlem nedeniyle daha belirsizdir, bu yüzden "ilk 10 yıl" karşılaştırması temkinli okunmalıdır. `) +
     `Konum ${b.name}, ${fmtDate(b.start)} – ${fmtDate(b.end)}. ` +
     `Kaynak: ${source === 'api' ? 'backend API' : 'statik anlık görüntü'}, güncellenme ${fmtDate(b.fetchedAt.slice(0, 10))}.`;
 }
@@ -199,7 +201,7 @@ function renderAnomaly(years: YearRow[], b: Bundle) {
     // Etiketi son 15 yılın en yüksek çubuğunun üstüne koy, kenarına arka plan rengi "hale" ver
     const recent = years.slice(-15);
     const top = d3.max(recent, (d) => Math.max(d.anomaly, rolling.get(d.year) ?? -Infinity))!;
-    svg.append('text').attr('x', width - m.right).attr('y', Math.max(m.top + 10, y(top) - 8))
+    svg.append('text').attr('x', width - m.right).attr('y', Math.max(14, y(top) - 12))
       .attr('text-anchor', 'end').attr('class', 'direct-label')
       .text(`${b.rollingWindow} yıllık ort. ${signed(rolling.get(last.year)!)}`);
   }
