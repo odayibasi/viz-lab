@@ -28,7 +28,10 @@ if (!only || only === 'climate') {
       console.log(`✔ iklim ${city.name}: ${data.start} → ${data.tmean.length} gün`);
     } catch (err) {
       failures++;
-      console.warn(`✖ iklim ${city.name}: ${(err as Error).message}`);
+      const msg = `${(err as Error).message}${(err as Error).cause ? ` (cause: ${String((err as Error).cause)})` : ''}`;
+      console.warn(`✖ iklim ${city.name}: ${msg}`);
+      // GitHub Actions'ta hata özetini annotation olarak da yaz (API'den okunabilir)
+      if (process.env.GITHUB_ACTIONS) console.log(`::warning title=iklim ${city.id}::${msg.slice(0, 500).replace(/\r?\n/g, ' ')}`);
       if (!existsSync(resolve(outDir, file))) {
         write(file, makeSampleClimate(city));
         console.warn(`  → mevcut dosya yok, sentetik örnek yazıldı`);
