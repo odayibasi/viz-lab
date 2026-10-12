@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Günlük veri yenilemesinden sonra siteyi yeniden yayınla
+  # (Actions'ın kendi commit'i normal push tetikleyicisini çalıştırmaz)
+  workflow_run:
+    workflows: [Refresh static snapshot]
+    types: [completed]
 
 permissions:
   contents: read
@@ -17,6 +22,7 @@ concurrency:
 
 jobs:
   test:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
