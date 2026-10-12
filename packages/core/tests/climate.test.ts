@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   addDays, dayOfYear, splitRange, expand, yearlyAnomalies, rollingMean, dailyNormals, dailyAnomalies,
-  parseOpenMeteo, fetchClimate, climateBundle, makeSampleClimate, CITIES,
+  parseOpenMeteo, fetchClimate, climateBundle, makeSampleClimate, mergeClimate, lastDate, CITIES,
 } from '../src';
 
 describe('tarih yardımcıları', () => {
@@ -127,9 +127,27 @@ describe('parseOpenMeteo & fetchClimate', () => {
     expect(url.searchParams.get('daily')).toContain('temperature_2m_mean');
   });
 
+  it('429 gelince bekleyip tekrar dener', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('{"reason":"Minutely API request limit exceeded"}', { status: 429 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(response(['2020-01-01'], [5]))));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+    const data = await fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-01', fetchImpl, sleep, retryDelayMs: 10 });
+    expect(sleep).toHaveBeenCalledWith(10);
+    expect(data.tmean).toEqual([5]);
+  });
+
+  it('deneme hakkı bitince 429 hatası fırlatır', async () => {
+    const fetchImpl = vi.fn().mockImplementation(() => Promise.resolve(new Response('limit', { status: 429 })));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+    await expect(fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-01', fetchImpl, sleep, retries: 2 })).rejects.toThrow('429');
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
   it('HTTP hatasını iletir', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(new Response('limit', { status: 429 }));
-    await expect(fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-02', fetchImpl })).rejects.toThrow('429');
+    const fetchImpl = vi.fn().mockResolvedValue(new Response('down', { status: 500 }));
+    await expect(fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-02', fetchImpl })).rejects.toThrow('500');
   });
 });
 
@@ -152,5 +170,24 @@ describe('climateBundle', () => {
 
   it('günlük anomali dizisi günlük veriyle aynı uzunlukta', () => {
     expect(bundle.daily.length).toBe(makeSampleClimate().tmean.length);
+  });
+});
+
+describe('mergeClimate', () => {
+  const base = { ...makeSampleClimate(CITIES[0], '1940-01-10'), sample: false };
+
+  it('çakışan günleri günceller ve yenilerini ekler', () => {
+    const update = { ...base, start: '1940-01-09', tmean: [100, 101, 102], tmax: [1, 1, 1], tmin: [0, 0, 0], precip: [0, 0, 0], fetchedAt: 'x' };
+    const merged = mergeClimate(base, update);
+    expect(merged.tmean.length).toBe(11);
+    expect(merged.tmean.slice(8)).toEqual([100, 101, 102]);
+    expect(merged.tmean.slice(0, 8)).toEqual(base.tmean.slice(0, 8));
+    expect(lastDate(merged)).toBe('1940-01-11');
+    expect(merged.fetchedAt).toBe('x');
+  });
+
+  it('boşluk varsa hata verir', () => {
+    const update = { ...base, start: '1940-02-01' };
+    expect(() => mergeClimate(base, update)).toThrow('boşluk');
   });
 });

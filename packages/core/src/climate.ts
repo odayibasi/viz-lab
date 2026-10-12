@@ -91,6 +91,11 @@ export async function fetchClimate(
     end = addDays(new Date().toISOString().slice(0, 10), -2),
     chunkYears = 20,
     fetchImpl = fetch as typeof fetch,
+    /** 429 (dakikalık limit) gelirse kaç kez bekleyip tekrar denensin */
+    retries = 6,
+    retryDelayMs = 61_000,
+    sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms)),
+    onRetry = (_attempt: number, _reason: string) => {},
   } = {},
 ): Promise<ClimateData> {
   const parts = [];
@@ -105,9 +110,18 @@ export async function fetchClimate(
       models: 'era5', // çok on yıllık analiz için tutarlı tek model
       timezone: 'auto',
     }).toString();
-    const res = await fetchImpl(url.toString(), { headers: { 'user-agent': 'viz-lab' } });
-    if (!res.ok) throw new Error(`Open-Meteo ${res.status}: ${await res.text()}`);
-    parts.push(parseOpenMeteo((await res.json()) as OpenMeteoResponse));
+    // Not: Open-Meteo uzun aralıkları birden çok "istek" sayar; dakikalık limite takılırsa bekleyip tekrar dener.
+    for (let attempt = 0; ; attempt++) {
+      const res = await fetchImpl(url.toString(), { headers: { 'user-agent': 'viz-lab' } });
+      if (res.status === 429 && attempt < retries) {
+        onRetry(attempt + 1, await res.text());
+        await sleep(retryDelayMs);
+        continue;
+      }
+      if (!res.ok) throw new Error(`Open-Meteo ${res.status}: ${await res.text()}`);
+      parts.push(parseOpenMeteo((await res.json()) as OpenMeteoResponse));
+      break;
+    }
   }
 
   const merged = {
@@ -133,6 +147,29 @@ export async function fetchClimate(
     tmax: merged.tmax.slice(0, n),
     tmin: merged.tmin.slice(0, n),
     precip: merged.precip.slice(0, n),
+  };
+}
+
+/** Son tarih (YYYY-MM-DD). */
+export const lastDate = (d: ClimateData) => addDays(d.start, d.tmean.length - 1);
+
+/**
+ * Artımlı güncelleme: `update`'in kapsadığı günler `base` üzerine yazılır, sonrası eklenir.
+ * Günlük çalışmada 86 yılı yeniden çekmek yerine sadece son haftalar çekilir.
+ */
+export function mergeClimate(base: ClimateData, update: ClimateData): ClimateData {
+  const offset = Math.round((Date.parse(update.start) - Date.parse(base.start)) / 86_400_000);
+  if (offset < 0) throw new Error('Güncelleme mevcut verinin başlangıcından önce başlıyor');
+  if (offset > base.tmean.length) throw new Error('Güncelleme ile mevcut veri arasında boşluk var');
+  const merge = (a: (number | null)[], b: (number | null)[]) => [...a.slice(0, offset), ...b];
+  return {
+    ...base,
+    fetchedAt: update.fetchedAt,
+    sample: undefined,
+    tmean: merge(base.tmean, update.tmean),
+    tmax: merge(base.tmax, update.tmax),
+    tmin: merge(base.tmin, update.tmin),
+    precip: merge(base.precip, update.precip),
   };
 }
 
