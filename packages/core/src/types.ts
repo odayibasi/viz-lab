@@ -1,4 +1,4 @@
-// scripts/fetch-data.ts tarafından üretilen data/github.json dosyasının şeması.
+// GitHub'dan çekilen ham verinin ortak şeması (api, web ve script'ler aynı tipi kullanır).
 
 export interface ContributionDay {
   date: string; // YYYY-MM-DD
@@ -14,6 +14,8 @@ export interface RepoLanguage {
 export interface RepoSummary {
   name: string;
   stars: number;
+  forks: number;
+  pushedAt: string | null;
   languages: RepoLanguage[];
 }
 

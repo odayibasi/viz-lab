@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aktivite Paneli</title>
+    <link rel="stylesheet" href="../../styles/base.css" />
+    <style>
+      .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+      .tile .label { font-size: 12px; color: var(--muted); }
+      .tile .value { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+      .charts h2 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+      .chart { height: 280px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="../../">← Tüm deneyler</a>
+      <h1>Aktivite paneli <span class="badge">ECharts</span> <span class="badge">backend özet</span></h1>
+      <p class="lead" id="summary"></p>
+      <div class="tiles" id="tiles"></div>
+      <div class="charts">
+        <div class="card"><h2>Haftanın günlerine göre ortalama katkı</h2><div class="chart" id="weekdays"></div></div>
+        <div class="card"><h2>Aylık toplam katkı</h2><div class="chart" id="monthly"></div></div>
+      </div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

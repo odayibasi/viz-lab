@@ -11,8 +11,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "experiments", "scripts", "tests", "vite.config.ts"]
+  "include": ["packages", "apps", "scripts", "vitest.config.ts"],
+  "exclude": ["**/node_modules", "**/dist"]
 }

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viz Lab</title>
+    <link rel="stylesheet" href="./styles/base.css" />
+    <style>
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+      .grid a.card { display: block; color: inherit; transition: border-color 0.15s; }
+      .grid a.card:hover { border-color: var(--accent); text-decoration: none; }
+      .grid h2 { font-size: 16px; margin: 0 0 6px; }
+      .grid p { margin: 0; color: var(--muted); font-size: 14px; }
+      form { display: flex; gap: 8px; margin: 0 0 24px; flex-wrap: wrap; }
+      input { flex: 1 1 220px; font: inherit; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
+      button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+      #status { font-size: 13px; color: var(--muted); margin: -16px 0 24px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Viz Lab</h1>
+      <p class="lead">GitHub verisi üzerinde görselleştirme denemeleri. Bir kullanıcı seç, sonra bir deney aç.</p>
+      <form id="user-form">
+        <input id="user" name="user" placeholder="GitHub kullanıcı adı (ör. odayibasi)" autocomplete="off" />
+        <button type="submit">Uygula</button>
+      </form>
+      <p id="status"></p>
+      <div class="grid">
+        <a class="card" data-exp href="experiments/01-contribution-heatmap/">
+          <h2>01 · Contribution heatmap <span class="badge">D3</span></h2>
+          <p>Son bir yılın günlük katkıları, GitHub profilindeki ızgara gibi.</p>
+        </a>
+        <a class="card" data-exp href="experiments/02-language-donut/">
+          <h2>02 · Dil dağılımı <span class="badge">ECharts</span></h2>
+          <p>Tüm repolardaki kodun dillere göre byte payı.</p>
+        </a>
+        <a class="card" data-exp href="experiments/03-activity-dashboard/">
+          <h2>03 · Aktivite paneli <span class="badge">ECharts</span></h2>
+          <p>Backend'in hesapladığı özet: seriler, haftanın günleri, aylık trend.</p>
+        </a>
+      </div>
+    </main>
+    <script type="module">
+      const params = new URLSearchParams(location.search);
+      const input = document.querySelector('#user');
+      input.value = params.get('user') ?? '';
+
+      const syncLinks = () => {
+        const u = input.value.trim();
+        document.querySelectorAll('a[data-exp]').forEach((a) => {
+          const url = new URL(a.getAttribute('href'), location.href);
+          u ? url.searchParams.set('user', u) : url.searchParams.delete('user');
+          a.href = url.toString();
+        });
+      };
+      document.querySelector('#user-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const u = input.value.trim();
+        history.replaceState(null, '', u ? `?user=${encodeURIComponent(u)}` : location.pathname);
+        syncLinks();
+      });
+      syncLinks();
+
+      // Backend çalışıyor mu?
+      const status = document.querySelector('#status');
+      const api = (import.meta.env?.VITE_API_URL ?? '').replace(/\/$/, '');
+      fetch(`${api}/api/health`)
+        .then((r) => (r.ok && r.headers.get('content-type')?.includes('json') ? r.json() : Promise.reject()))
+        .then((h) => (status.textContent = `● Backend bağlı (${h.mode === 'live' ? 'canlı GitHub verisi' : 'örnek veri modu'})`))
+        .catch(() => (status.textContent = '○ Backend yok: statik anlık görüntü kullanılıyor (kullanıcı seçimi devre dışı)'));
+    </script>
+  </body>
+</html>

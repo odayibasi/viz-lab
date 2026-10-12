@@ -1,5 +1,5 @@
 // Saf veri dönüşüm fonksiyonları. DOM'a dokunmaz, bu yüzden kolayca test edilir.
-import type { ContributionDay, RepoSummary } from './types';
+import type { ContributionDay, GitHubData, RepoSummary } from './types';
 
 export interface HeatmapCell extends ContributionDay {
   week: number; // 0'dan başlayan hafta indeksi
@@ -69,6 +69,74 @@ export function aggregateLanguages(repos: RepoSummary[], top = 6): LanguageShare
 
 export function totalContributions(days: ContributionDay[]): number {
   return days.reduce((s, d) => s + d.count, 0);
+}
+
+export interface Streaks {
+  longest: number;
+  current: number; // son günden geriye doğru kesintisiz katkılı gün sayısı
+}
+
+/** En uzun ve güncel katkı serisini (ardışık gün) hesaplar. */
+export function streaks(days: ContributionDay[]): Streaks {
+  const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  let longest = 0;
+  let run = 0;
+  for (const d of sorted) {
+    run = d.count > 0 ? run + 1 : 0;
+    longest = Math.max(longest, run);
+  }
+  return { longest, current: run };
+}
+
+const WEEKDAYS_TR = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+const WEEKDAYS_TR_SHORT = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+/** Haftanın her günü için toplam ve ortalama katkı. */
+export function weekdayDistribution(days: ContributionDay[]) {
+  const totals = Array(7).fill(0) as number[];
+  const occurrences = Array(7).fill(0) as number[];
+  for (const d of days) {
+    const wd = parseUTC(d.date).getUTCDay();
+    totals[wd] += d.count;
+    occurrences[wd] += 1;
+  }
+  return totals.map((total, i) => ({
+    weekday: i,
+    name: WEEKDAYS_TR[i],
+    short: WEEKDAYS_TR_SHORT[i],
+    total,
+    average: occurrences[i] ? total / occurrences[i] : 0,
+  }));
+}
+
+/** Ay bazında toplam katkı (YYYY-MM). */
+export function monthlyTotals(days: ContributionDay[]): { month: string; total: number }[] {
+  const map = new Map<string, number>();
+  for (const d of days) map.set(d.date.slice(0, 7), (map.get(d.date.slice(0, 7)) ?? 0) + d.count);
+  return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, total]) => ({ month, total }));
+}
+
+/** Dashboard için tek seferde dönen özet istatistikler. */
+export function summarize(data: GitHubData) {
+  const total = totalContributions(data.contributions);
+  const activeDays = data.contributions.filter((d) => d.count > 0).length;
+  const best = data.contributions.reduce<ContributionDay | null>((b, d) => (!b || d.count > b.count ? d : b), null);
+  const topRepos = [...data.repos].sort((a, b) => b.stars - a.stars).slice(0, 5);
+  return {
+    login: data.login,
+    fetchedAt: data.fetchedAt,
+    sample: Boolean(data.sample),
+    totalContributions: total,
+    activeDays,
+    dayCount: data.contributions.length,
+    averagePerActiveDay: activeDays ? total / activeDays : 0,
+    bestDay: best,
+    streaks: streaks(data.contributions),
+    repoCount: data.repos.length,
+    totalStars: data.repos.reduce((s, r) => s + r.stars, 0),
+    topRepos: topRepos.map((r) => ({ name: r.name, stars: r.stars })),
+    topLanguage: aggregateLanguages(data.repos, 1)[0]?.name ?? null,
+  };
 }
 
 function parseUTC(date: string): Date {

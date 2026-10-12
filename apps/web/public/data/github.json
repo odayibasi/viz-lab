@@ -1492,267 +1492,291 @@
     {
       "name": "sample-repo-1",
       "stars": 37,
+      "forks": 16,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "CSS",
-          "color": "#563d7c",
-          "size": 90033
+          "name": "Go",
+          "color": "#00ADD8",
+          "size": 69534
         },
         {
-          "name": "Shell",
-          "color": "#89e051",
-          "size": 69534
+          "name": "HTML",
+          "color": "#e34c26",
+          "size": 120138
         }
       ]
     },
     {
       "name": "sample-repo-2",
-      "stars": 63,
+      "stars": 22,
+      "forks": 28,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "HTML",
-          "color": "#e34c26",
-          "size": 51288
+          "name": "Go",
+          "color": "#00ADD8",
+          "size": 38933
+        },
+        {
+          "name": "CSS",
+          "color": "#563d7c",
+          "size": 64220
         },
         {
           "name": "Shell",
           "color": "#89e051",
-          "size": 58294
+          "size": 12785
+        },
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "size": 83150
         }
       ]
     },
     {
       "name": "sample-repo-3",
-      "stars": 2,
+      "stars": 10,
+      "forks": 0,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "TypeScript",
-          "color": "#3178c6",
-          "size": 142219
-        },
-        {
-          "name": "JavaScript",
-          "color": "#f1e05a",
-          "size": 186535
-        },
-        {
-          "name": "Go",
-          "color": "#00ADD8",
-          "size": 120960
-        },
-        {
-          "name": "CSS",
-          "color": "#563d7c",
-          "size": 162982
-        },
-        {
-          "name": "Rust",
-          "color": "#dea584",
-          "size": 91072
+          "name": "Python",
+          "color": "#3572A5",
+          "size": 169498
         }
       ]
     },
     {
       "name": "sample-repo-4",
-      "stars": 179,
+      "stars": 103,
+      "forks": 36,
+      "pushedAt": null,
       "languages": [
+        {
+          "name": "JavaScript",
+          "color": "#f1e05a",
+          "size": 75989
+        },
         {
           "name": "Go",
           "color": "#00ADD8",
-          "size": 102956
+          "size": 150001
         },
         {
           "name": "HTML",
           "color": "#e34c26",
-          "size": 33994
+          "size": 64900
         },
         {
           "name": "Rust",
           "color": "#dea584",
-          "size": 75989
+          "size": 92208
         }
       ]
     },
     {
       "name": "sample-repo-5",
-      "stars": 124,
+      "stars": 253,
+      "forks": 0,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "TypeScript",
-          "color": "#3178c6",
-          "size": 113002
+          "name": "Python",
+          "color": "#3572A5",
+          "size": 141582
         },
         {
           "name": "Go",
           "color": "#00ADD8",
-          "size": 183198
-        },
-        {
-          "name": "Shell",
-          "color": "#89e051",
-          "size": 145107
-        },
-        {
-          "name": "Rust",
-          "color": "#dea584",
-          "size": 193397
+          "size": 57247
         }
       ]
     },
     {
       "name": "sample-repo-6",
-      "stars": 104,
+      "stars": 55,
+      "forks": 0,
+      "pushedAt": null,
       "languages": [
         {
           "name": "TypeScript",
           "color": "#3178c6",
-          "size": 184978
+          "size": 8946
         },
         {
-          "name": "Python",
-          "color": "#3572A5",
-          "size": 36716
-        },
-        {
-          "name": "Go",
-          "color": "#00ADD8",
-          "size": 162051
+          "name": "Shell",
+          "color": "#89e051",
+          "size": 168525
         }
       ]
     },
     {
       "name": "sample-repo-7",
-      "stars": 0,
+      "stars": 6,
+      "forks": 7,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "JavaScript",
-          "color": "#f1e05a",
-          "size": 15988
+          "name": "Python",
+          "color": "#3572A5",
+          "size": 107584
+        },
+        {
+          "name": "Go",
+          "color": "#00ADD8",
+          "size": 197798
+        },
+        {
+          "name": "CSS",
+          "color": "#563d7c",
+          "size": 112282
         },
         {
           "name": "HTML",
           "color": "#e34c26",
-          "size": 76058
+          "size": 33733
         },
         {
           "name": "Shell",
           "color": "#89e051",
-          "size": 195140
-        },
-        {
-          "name": "Rust",
-          "color": "#dea584",
-          "size": 107584
+          "size": 159379
         }
       ]
     },
     {
       "name": "sample-repo-8",
-      "stars": 285,
+      "stars": 0,
+      "forks": 24,
+      "pushedAt": null,
       "languages": [
         {
           "name": "JavaScript",
           "color": "#f1e05a",
-          "size": 185464
+          "size": 68335
         },
         {
-          "name": "Go",
-          "color": "#00ADD8",
-          "size": 121780
-        },
-        {
-          "name": "Shell",
-          "color": "#89e051",
-          "size": 107803
+          "name": "Rust",
+          "color": "#dea584",
+          "size": 192291
         }
       ]
     },
     {
       "name": "sample-repo-9",
-      "stars": 26,
+      "stars": 7,
+      "forks": 0,
+      "pushedAt": null,
       "languages": [
-        {
-          "name": "TypeScript",
-          "color": "#3178c6",
-          "size": 1730
-        },
         {
           "name": "JavaScript",
           "color": "#f1e05a",
-          "size": 168088
+          "size": 145026
         },
         {
           "name": "Go",
           "color": "#00ADD8",
-          "size": 57758
+          "size": 4951
         },
         {
-          "name": "CSS",
-          "color": "#563d7c",
-          "size": 121391
+          "name": "HTML",
+          "color": "#e34c26",
+          "size": 150135
         },
         {
-          "name": "Shell",
-          "color": "#89e051",
-          "size": 9477
+          "name": "Rust",
+          "color": "#dea584",
+          "size": 112661
         }
       ]
     },
     {
       "name": "sample-repo-10",
-      "stars": 112,
+      "stars": 135,
+      "forks": 2,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "TypeScript",
-          "color": "#3178c6",
-          "size": 49749
+          "name": "JavaScript",
+          "color": "#f1e05a",
+          "size": 30527
+        },
+        {
+          "name": "Go",
+          "color": "#00ADD8",
+          "size": 47874
+        },
+        {
+          "name": "HTML",
+          "color": "#e34c26",
+          "size": 154258
         },
         {
           "name": "Shell",
           "color": "#89e051",
-          "size": 90304
+          "size": 169395
         }
       ]
     },
     {
       "name": "sample-repo-11",
-      "stars": 0,
+      "stars": 102,
+      "forks": 17,
+      "pushedAt": null,
       "languages": [
         {
-          "name": "TypeScript",
-          "color": "#3178c6",
-          "size": 134225
-        },
-        {
-          "name": "Python",
-          "color": "#3572A5",
-          "size": 51554
+          "name": "JavaScript",
+          "color": "#f1e05a",
+          "size": 175366
         },
         {
           "name": "Go",
           "color": "#00ADD8",
-          "size": 158114
+          "size": 191276
+        },
+        {
+          "name": "Shell",
+          "color": "#89e051",
+          "size": 69466
+        },
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "size": 81212
         }
       ]
     },
     {
       "name": "sample-repo-12",
-      "stars": 2,
+      "stars": 0,
+      "forks": 39,
+      "pushedAt": null,
       "languages": [
         {
           "name": "Python",
           "color": "#3572A5",
-          "size": 7657
+          "size": 23455
         },
         {
-          "name": "Go",
-          "color": "#00ADD8",
-          "size": 199684
+          "name": "CSS",
+          "color": "#563d7c",
+          "size": 132290
+        },
+        {
+          "name": "HTML",
+          "color": "#e34c26",
+          "size": 29712
         },
         {
           "name": "Shell",
           "color": "#89e051",
-          "size": 191549
+          "size": 101415
+        },
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "size": 120683
         }
       ]
     }

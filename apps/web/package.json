@@ -1,0 +1,20 @@
+{
+  "name": "@viz/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@viz/core": "*",
+    "d3": "^7.9.0",
+    "echarts": "^5.5.1"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "vite": "^5.4.0"
+  }
+}

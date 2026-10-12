@@ -1,0 +1,13 @@
+{
+  "name": "@viz/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ortak tipler, GitHub istemcisi ve saf veri dönüşümleri",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}

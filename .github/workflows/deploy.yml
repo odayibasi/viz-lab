@@ -1,4 +1,4 @@
-name: Test & Deploy to GitHub Pages
+name: Test & Deploy
 
 on:
   push:
@@ -12,11 +12,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,18 +25,31 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+
+  build-web:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w @viz/web
         env:
           BASE: /${{ github.event.repository.name }}/
+          # Backend'i bir yere deploy ettiysen repo değişkeni olarak VITE_API_URL tanımla
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
       - uses: actions/upload-pages-artifact@v3
-        if: github.ref == 'refs/heads/main'
         with:
-          path: dist
+          path: apps/web/dist
 
-  deploy:
+  deploy-pages:
     if: github.ref == 'refs/heads/main'
-    needs: build
+    needs: build-web
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -65,6 +65,8 @@ a:hover { text-decoration: underline; }
   vertical-align: middle;
 }
 
+.error { color: #cf222e; }
+
 .tooltip {
   position: fixed;
   pointer-events: none;

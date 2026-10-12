@@ -1,31 +1,29 @@
 {
-  "name": "github-viz-lab",
-  "version": "0.1.0",
+  "name": "viz-lab",
+  "version": "0.2.0",
   "private": true,
-  "description": "GitHub verisi üzerinde görselleştirme denemeleri (D3, ECharts, ...)",
+  "description": "GitHub verisi üzerinde görselleştirme denemeleri: TypeScript backend + D3/ECharts frontend",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "fetch-data": "tsx scripts/fetch-data.ts",
-    "fetch-data:local": "node --env-file=.env --import tsx scripts/fetch-data.ts",
-    "sample-data": "tsx scripts/make-sample.ts",
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev -w @viz/api",
+    "dev:web": "npm run dev -w @viz/web",
+    "start:api": "npm run start -w @viz/api",
+    "build": "npm run typecheck && npm run build -w @viz/web",
+    "snapshot": "node --env-file-if-exists=.env --import tsx scripts/snapshot.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "d3": "^7.9.0",
-    "echarts": "^5.5.1"
-  },
   "devDependencies": {
-    "@octokit/graphql": "^8.1.1",
-    "@types/d3": "^7.4.3",
     "@types/node": "^22.7.0",
+    "concurrently": "^9.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
-    "vite": "^5.4.0",
     "vitest": "^2.1.0"
   }
 }

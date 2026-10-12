@@ -1,74 +1,98 @@
-# GitHub Viz Lab
+# Viz Lab
 
 GitHub verisi üzerinde görselleştirme denemeleri ve testleri için bir oyun alanı.
-Her deney `experiments/` altında bağımsız bir sayfa; hepsi aynı veri dosyasını ve aynı test edilmiş dönüşüm fonksiyonlarını kullanır.
+TypeScript bir **backend** GitHub'dan veriyi çeker, işler ve cache'ler; **frontend** deneyleri bu işlenmiş veriyi D3 / ECharts ile çizer.
+
+```
+┌──────────────┐   GraphQL    ┌──────────────────────┐   JSON    ┌──────────────────────┐
+│  GitHub API  │ ───────────▶ │  apps/api  (Hono)    │ ────────▶ │  apps/web  (Vite)    │
+└──────────────┘              │  cache + işleme      │           │  D3, ECharts deneyleri│
+                              └──────────┬───────────┘           └──────────▲───────────┘
+                                         │  packages/core: tipler, GitHub     │
+                                         └── istemcisi, saf dönüşümler ───────┘
+```
 
 ## Stack
 
 | Katman | Araç |
 | --- | --- |
-| Dil / build | TypeScript, Vite (çok sayfalı) |
-| Veri | GitHub GraphQL API, `@octokit/graphql` |
-| Görselleştirme | D3.js, Apache ECharts (yenileri eklenebilir: Observable Plot, Three.js…) |
-| Test | Vitest |
-| CI / yayın | GitHub Actions → GitHub Pages |
+| Monorepo | npm workspaces, TypeScript |
+| Backend | [Hono](https://hono.dev) + Node, TTL cache (bellek + disk) |
+| Ortak kod | `@viz/core`: tipler, GitHub GraphQL istemcisi, dönüşümler |
+| Frontend | Vite (çok sayfalı), D3.js, Apache ECharts |
+| Test | Vitest (core + API, ağ olmadan) |
+| CI / yayın | GitHub Actions → GitHub Pages, Dockerfile (API) |
 
 ## Başlangıç
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm test           # birim testleri
+npm run dev      # API → :8787, web → :5173 (Vite /api isteklerini backend'e proxy'ler)
+npm test
 ```
 
-Repo, token gerektirmeden çalışsın diye `data/github.json` içinde **örnek veri** ile gelir.
-
-### Kendi verini çekmek
+Token olmadan da çalışır: API örnek veri moduna geçer. Gerçek veri için:
 
 ```bash
-cp .env.example .env     # GITHUB_TOKEN ve GITHUB_LOGIN doldur
-npm run fetch-data:local
+cp .env.example .env   # GITHUB_TOKEN doldur
+npm run dev
 ```
 
-Örnek veriye geri dönmek için: `npm run sample-data`
+Sonra `http://localhost:5173/?user=odayibasi` gibi istediğin kullanıcıyı aç.
+
+## API
+
+| Endpoint | Ne döner |
+| --- | --- |
+| `GET /api/health` | `{ ok, mode: "live" \| "sample" }` |
+| `GET /api/users/:login/raw` | Ham veri (katkılar + repolar) |
+| `GET /api/users/:login/summary` | Toplam, aktif gün, seriler, en iyi gün, en çok yıldızlı repolar |
+| `GET /api/users/:login/heatmap` | Hafta/gün ızgarası, 0–4 yoğunluk seviyesi |
+| `GET /api/users/:login/languages?top=6` | Dillerin byte payı (kalanlar "Diğer") |
+| `GET /api/users/:login/weekdays` | Haftanın günlerine göre toplam/ortalama |
+| `GET /api/users/:login/monthly` | Aylık toplam katkı |
+
+Her yanıtta `X-Cache: HIT|MISS` başlığı bulunur; `?refresh=1` cache'i atlar. Varsayılan cache süresi 10 dakikadır (`CACHE_TTL_SECONDS`).
 
 ## Yapı
 
 ```
-experiments/
-  01-contribution-heatmap/   D3 ile GitHub tarzı katkı ızgarası
-  02-language-donut/         ECharts ile dil dağılımı
-src/lib/
-  types.ts                   veri şeması
-  transform.ts               saf dönüşüm fonksiyonları (test edilir)
-scripts/
-  fetch-data.ts              GraphQL → data/github.json
-  make-sample.ts             deterministik örnek veri
-tests/                       Vitest testleri
-.github/workflows/
-  deploy.yml                 test + build + Pages deploy
-  fetch-data.yml             günlük veri güncelleme (cron)
+packages/core/          ortak tipler, GitHub istemcisi, dönüşümler (+ testler)
+apps/api/               Hono backend (+ testler, Dockerfile)
+apps/web/
+  experiments/01-...    D3 contribution heatmap
+  experiments/02-...    ECharts dil dağılımı
+  experiments/03-...    Aktivite paneli (backend özetleri)
+  lib/data.ts           veri katmanı: önce API, yoksa statik anlık görüntü
+  public/data/          statik anlık görüntü (GitHub Pages için)
+scripts/snapshot.ts     statik anlık görüntüyü üretir
 ```
 
 ## Yeni deney eklemek
 
-1. `experiments/03-adi/` klasörü aç, içine `index.html` ve `main.ts` koy (mevcut bir deneyi kopyalamak en hızlısı).
-2. Veri hazırlığını `src/lib/transform.ts` içine fonksiyon olarak yaz, `tests/` altında testini ekle.
-3. Ana sayfadaki (`index.html`) galeriye bir kart ekle.
+1. Veri işleme gerekiyorsa `packages/core/src/transform.ts`'e saf bir fonksiyon ve testini ekle.
+2. Backend'de `apps/api/src/app.ts` içine endpoint ekle (bir satır), `apps/web/lib/data.ts`'e karşılığını yaz.
+3. `apps/web/experiments/04-adi/` altına `index.html` + `main.ts` koy; Vite onu otomatik olarak build'e alır.
+4. Ana sayfaya (`apps/web/index.html`) bir kart ekle.
 
-Vite, `experiments/` altındaki her `index.html` dosyasını otomatik olarak build'e dahil eder.
+## Yayınlama
 
-## GitHub Pages
+**Frontend (GitHub Pages):** Repo ayarlarında **Settings → Pages → Source: GitHub Actions** seç. `main`'e her push'ta test, typecheck ve build çalışır. Backend yoksa site statik anlık görüntüyle çalışır; bu görüntü her gün `Refresh static snapshot` workflow'u ile yenilenir.
 
-Repo ayarlarında **Settings → Pages → Source: GitHub Actions** seç. `main`'e her push'ta testler çalışır ve site `https://<kullanici>.github.io/github-viz-lab/` adresine yayınlanır.
+**Backend:** Docker çalıştıran herhangi bir yere (Render, Fly.io, Railway, kendi sunucun) koyabilirsin:
 
-Günlük veri güncellemesi için isteğe bağlı olarak **Settings → Secrets and variables → Actions** altında `GH_DATA_TOKEN` secret'ı ve `GITHUB_LOGIN` değişkeni tanımlayabilirsin; tanımlamazsan repo sahibinin verisi varsayılan token ile çekilir.
+```bash
+docker build -f apps/api/Dockerfile -t viz-lab-api .
+docker run -p 8787:8787 -e GITHUB_TOKEN=xxx viz-lab-api
+```
+
+Ardından repo değişkeni olarak `VITE_API_URL=https://senin-api-adresin` tanımla; Pages sürümü bundan sonra backend'i kullanır.
 
 ## Deney fikirleri
 
 - Contributor ağı (D3 force layout)
-- Haftanın günü × saat commit yoğunluğu
+- Haftanın günü × saat commit yoğunluğu (commit zaman damgaları için yeni endpoint)
 - PR açılıştan merge'e geçen süre dağılımı
 - Star geçmişi zaman serisi
 - 3D "commit şehri" (Three.js)
-- README için otomatik üretilen SVG istatistik kartı
+- README için backend'in ürettiği SVG istatistik kartı
