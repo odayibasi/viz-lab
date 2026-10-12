@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitHub Viz Lab</title>
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <style>
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+      .grid a.card { display: block; color: inherit; transition: border-color 0.15s; }
+      .grid a.card:hover { border-color: var(--accent); text-decoration: none; }
+      .grid h2 { font-size: 16px; margin: 0 0 6px; }
+      .grid p { margin: 0; color: var(--muted); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>GitHub Viz Lab</h1>
+      <p class="lead">GitHub verisi üzerinde görselleştirme denemeleri. Her kart ayrı bir deney.</p>
+      <div class="grid">
+        <a class="card" href="experiments/01-contribution-heatmap/">
+          <h2>01 · Contribution heatmap <span class="badge">D3</span></h2>
+          <p>Son bir yılın günlük katkıları, GitHub profilindeki ızgara gibi.</p>
+        </a>
+        <a class="card" href="experiments/02-language-donut/">
+          <h2>02 · Dil dağılımı <span class="badge">ECharts</span></h2>
+          <p>Tüm repolardaki kodun dillere göre byte payı.</p>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>
