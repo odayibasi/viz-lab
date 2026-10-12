@@ -7,7 +7,7 @@ describe('API (örnek veri modu)', () => {
 
   it('health endpoint modu bildirir', async () => {
     const res = await app.request('/api/health');
-    expect(await res.json()).toEqual({ ok: true, mode: 'sample' });
+    expect(await res.json()).toMatchObject({ ok: true, mode: 'sample' });
   });
 
   it('summary işlenmiş istatistik döner', async () => {
@@ -87,5 +87,43 @@ describe('TtlCache', () => {
     const results = await Promise.all([cache.get('k', loader), cache.get('k', loader)]);
     expect(loader).toHaveBeenCalledTimes(1);
     expect(results.map((r) => r.value)).toEqual([7, 7]);
+  });
+});
+
+describe('İklim API', () => {
+  const app = createApp({ climateSample: true });
+
+  it('şehir listesini döner', async () => {
+    const cities = await (await app.request('/api/climate/cities')).json();
+    expect(cities.map((c: { id: string }) => c.id)).toContain('istanbul');
+  });
+
+  it('işlenmiş paket: yıllık anomaliler, hareketli ortalama, günlük sapmalar', async () => {
+    const res = await app.request('/api/climate/istanbul');
+    expect(res.status).toBe(200);
+    const b = await res.json();
+    expect(b).toMatchObject({ city: 'istanbul', sample: true, baseline: [1961, 1990] });
+    expect(b.years.length).toBeGreaterThan(80);
+    expect(b.daily.length).toBeGreaterThan(30000);
+    expect(b.rolling[9].value).not.toBeNull();
+  });
+
+  it('raw görünümü kompakt seriyi döner ve cache kullanır', async () => {
+    const fresh = createApp({ climateSample: true });
+    const first = await fresh.request('/api/climate/ankara/raw');
+    expect(first.headers.get('X-Cache')).toBe('MISS');
+    expect((await first.json()).tmean.length).toBeGreaterThan(30000);
+    expect((await fresh.request('/api/climate/ankara')).headers.get('X-Cache')).toBe('HIT');
+  });
+
+  it('bilinmeyen şehirde 404', async () => {
+    expect((await app.request('/api/climate/paris')).status).toBe(404);
+    expect((await app.request('/api/climate/istanbul/xyz')).status).toBe(404);
+  });
+
+  it('kaynak hatasında 502', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response('down', { status: 503 }));
+    const live = createApp({ fetchImpl });
+    expect((await live.request('/api/climate/izmir')).status).toBe(502);
   });
 });

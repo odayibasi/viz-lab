@@ -1,7 +1,16 @@
 # Viz Lab
 
-GitHub verisi üzerinde görselleştirme denemeleri ve testleri için bir oyun alanı.
-TypeScript bir **backend** GitHub'dan veriyi çeker, işler ve cache'ler; **frontend** deneyleri bu işlenmiş veriyi D3 / ECharts ile çizer.
+Herkese açık veri kaynakları üzerinde görselleştirme denemeleri ve testleri için bir oyun alanı.
+TypeScript bir **backend** veriyi kaynaktan (GitHub, Open-Meteo, …) çeker, işler ve cache'ler; **frontend** deneyleri bu işlenmiş veriyi D3 / ECharts / Canvas ile çizer.
+
+**Canlı:** https://odayibasi.github.io/viz-lab/
+
+| Deney | Veri | Teknik |
+| --- | --- | --- |
+| 04 · Şehrin iklimi | Open-Meteo, ERA5 (1940–bugün, günlük) | Isınma şeritleri, anomali + hareketli ortalama, Canvas takvim ısı haritası |
+| 01 · Contribution heatmap | GitHub | D3 ızgara |
+| 02 · Dil dağılımı | GitHub | ECharts donut |
+| 03 · Aktivite paneli | GitHub | ECharts, özet kutucukları |
 
 ```
 ┌──────────────┐   GraphQL    ┌──────────────────────┐   JSON    ┌──────────────────────┐
@@ -51,6 +60,12 @@ Sonra `http://localhost:5173/?user=odayibasi` gibi istediğin kullanıcıyı aç
 | `GET /api/users/:login/languages?top=6` | Dillerin byte payı (kalanlar "Diğer") |
 | `GET /api/users/:login/weekdays` | Haftanın günlerine göre toplam/ortalama |
 | `GET /api/users/:login/monthly` | Aylık toplam katkı |
+
+| `GET /api/climate/cities` | Desteklenen şehirler |
+| `GET /api/climate/:city` | İşlenmiş iklim paketi: yıllık ortalama ve anomaliler (1961–1990 referansı), 10 yıllık hareketli ortalama, günlük sapmalar |
+| `GET /api/climate/:city/raw` | Kompakt günlük seri (ortalama/max/min sıcaklık, yağış) |
+
+İklim verisi 24 saat cache'lenir. İnternet erişimi olmayan ortamda `CLIMATE_SAMPLE=1` ile sentetik veri kullanılır.
 
 Her yanıtta `X-Cache: HIT|MISS` başlığı bulunur; `?refresh=1` cache'i atlar. Varsayılan cache süresi 10 dakikadır (`CACHE_TTL_SECONDS`).
 

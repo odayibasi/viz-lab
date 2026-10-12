@@ -13,7 +13,13 @@ import {
   aggregateLanguages,
   weekdayDistribution,
   monthlyTotals,
+  CITIES,
+  findCity,
+  fetchClimate,
+  makeSampleClimate,
+  climateBundle,
   type GitHubData,
+  type ClimateData,
 } from '@viz/core';
 import { TtlCache } from './cache';
 
@@ -24,6 +30,9 @@ export interface AppOptions {
   cacheDir?: string;
   fetchImpl?: typeof fetch;
   log?: boolean;
+  /** true ise iklim verisi Open-Meteo yerine sentetik örnekten gelir (ağsız geliştirme/test). */
+  climateSample?: boolean;
+  climateTtlMs?: number;
 }
 
 // GitHub kullanıcı adı kuralları: harf/rakam/tire, en fazla 39 karakter
@@ -37,7 +46,7 @@ export function createApp(opts: AppOptions = {}) {
   if (opts.log) app.use('*', logger());
   app.use('/api/*', cors());
 
-  app.get('/api/health', (c) => c.json({ ok: true, mode }));
+  app.get('/api/health', (c) => c.json({ ok: true, mode, climate: opts.climateSample ? 'sample' : 'live' }));
 
   // Her kullanıcı endpoint'i önce ham veriyi (cache'li) yükler, sonra işler.
   const users = new Hono<{ Variables: { data: GitHubData } }>();
@@ -86,6 +95,33 @@ export function createApp(opts: AppOptions = {}) {
   users.get('/:login/monthly', (c) => c.json(monthlyTotals(c.get('data').contributions)));
 
   app.route('/api/users', users);
+
+  // --- İklim (Open-Meteo / ERA5) -------------------------------------------
+  // Geçmiş veri günde bir güncellendiği için uzun süre cache'lenir.
+  const climateCache = new TtlCache<ClimateData>(opts.climateTtlMs ?? 24 * 3_600_000, opts.cacheDir && `${opts.cacheDir}/climate`);
+  const loadClimate = (id: string, force: boolean) => {
+    const city = findCity(id)!;
+    return climateCache.get(
+      city.id,
+      () => (opts.climateSample ? Promise.resolve(makeSampleClimate(city)) : fetchClimate(city, { fetchImpl: opts.fetchImpl })),
+      { force },
+    );
+  };
+
+  app.get('/api/climate/cities', (c) => c.json(CITIES));
+
+  app.get('/api/climate/:city/:view?', async (c) => {
+    const { city, view = 'bundle' } = c.req.param();
+    if (!findCity(city)) return c.json({ error: `Bilinmeyen şehir: ${city}`, cities: CITIES.map((x) => x.id) }, 404);
+    if (view !== 'bundle' && view !== 'raw') return c.json({ error: 'Bulunamadı' }, 404);
+    try {
+      const { value, hit } = await loadClimate(city, c.req.query('refresh') === '1');
+      c.header('X-Cache', hit ? 'HIT' : 'MISS');
+      return c.json(view === 'raw' ? value : climateBundle(value));
+    } catch (err) {
+      return c.json({ error: err instanceof Error ? err.message : 'İklim verisi alınamadı' }, 502);
+    }
+  });
 
   app.notFound((c) => c.json({ error: 'Bulunamadı' }, 404));
   app.onError((err, c) => {

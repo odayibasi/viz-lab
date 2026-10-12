@@ -15,6 +15,7 @@ const app = createApp({
   cacheTtlMs: Number(process.env.CACHE_TTL_SECONDS ?? 600) * 1000,
   cacheDir: process.env.CACHE_DIR ?? '.cache',
   log: true,
+  climateSample: process.env.CLIMATE_SAMPLE === '1',
 });
 
 serve({ fetch: app.fetch, port }, () => {

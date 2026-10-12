@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Şehrin İklimi</title>
+    <link rel="stylesheet" href="../../styles/base.css" />
+    <link rel="stylesheet" href="./climate.css" />
+  </head>
+  <body>
+    <main>
+      <a class="back" href="../../">← Tüm deneyler</a>
+      <h1><span id="city-title">İstanbul'un</span> iklimi <span class="badge">D3</span> <span class="badge">Canvas</span></h1>
+      <p class="lead" id="summary">Yükleniyor…</p>
+
+      <div class="controls" role="group" aria-label="Şehir seç" id="city-picker"></div>
+
+      <div class="tiles" id="tiles"></div>
+
+      <section class="card">
+        <header class="chart-head">
+          <h2>Isınma şeritleri</h2>
+          <p>Her şerit bir yıl. Renk, o yılın ortalama sıcaklığının <span class="baseline-label"></span> ortalamasından ne kadar saptığını gösterir.</p>
+        </header>
+        <div id="stripes" class="chart"></div>
+        <div class="legend-scale" id="stripes-legend"></div>
+      </section>
+
+      <section class="card">
+        <header class="chart-head">
+          <h2>Yıllık sıcaklık sapması</h2>
+          <p>Çubuklar her yılın sapmasını, çizgi <span class="rolling-label"></span> hareketli ortalamayı gösterir. Sıfır çizgisi referans dönemi ortalamasıdır.</p>
+        </header>
+        <div class="legend" id="anomaly-legend"></div>
+        <div id="anomaly" class="chart"></div>
+      </section>
+
+      <section class="card">
+        <header class="chart-head">
+          <h2>Her gün, her yıl</h2>
+          <p>Her satır bir yıl, her nokta bir gün. Renk, o günün kendi takvim gününün normaline göre ne kadar sıcak ya da soğuk olduğunu gösterir. Yaz sıcak hava dalgaları kırmızı lekeler olarak görünür.</p>
+        </header>
+        <div id="calendar" class="chart calendar"></div>
+        <div class="legend-scale" id="calendar-legend"></div>
+      </section>
+
+      <details class="card table-view">
+        <summary>Yıllık verileri tablo olarak göster</summary>
+        <div id="table"></div>
+      </details>
+
+      <p class="source" id="source"></p>
+    </main>
+    <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

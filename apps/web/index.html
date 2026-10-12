@@ -15,12 +15,24 @@
       input { flex: 1 1 220px; font: inherit; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
       button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
       #status { font-size: 13px; color: var(--muted); margin: -16px 0 24px; }
+      h2.section { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 32px 0 12px; }
+      .grid + h2.section { margin-top: 40px; }
     </style>
   </head>
   <body>
     <main>
       <h1>Viz Lab</h1>
-      <p class="lead">GitHub verisi üzerinde görselleştirme denemeleri. Bir kullanıcı seç, sonra bir deney aç.</p>
+      <p class="lead">Herkese açık veri kaynakları üzerinde görselleştirme denemeleri.</p>
+
+      <h2 class="section">Zaman serileri</h2>
+      <div class="grid">
+        <a class="card" href="experiments/04-climate/">
+          <h2>04 · Şehrin iklimi <span class="badge">D3</span> <span class="badge">Canvas</span></h2>
+          <p>İstanbul, Ankara ve İzmir'de 1940'tan bugüne sıcaklık: ısınma şeritleri, yıllık sapma ve her günün takvim ısı haritası.</p>
+        </a>
+      </div>
+
+      <h2 class="section">GitHub verisi</h2>
       <form id="user-form">
         <input id="user" name="user" placeholder="GitHub kullanıcı adı (ör. odayibasi)" autocomplete="off" />
         <button type="submit">Uygula</button>
