@@ -118,7 +118,7 @@ describe('parseOpenMeteo & fetchClimate', () => {
       .fn()
       .mockResolvedValueOnce(new Response(JSON.stringify(response(['1999-12-30', '1999-12-31'], [1, 2]))))
       .mockResolvedValueOnce(new Response(JSON.stringify(response(['2000-01-01', '2000-01-02'], [3, null]))));
-    const data = await fetchClimate(CITIES[0], { start: '1999-12-30', end: '2000-01-02', chunkYears: 1, fetchImpl });
+    const data = await fetchClimate(CITIES[0], { start: '1999-12-30', end: '2000-01-02', chunkYears: 1, fetchImpl, pauseMs: 0 });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(data.start).toBe('1999-12-30');
     expect(data.tmean).toEqual([1, 2, 3]);
@@ -138,6 +138,17 @@ describe('parseOpenMeteo & fetchClimate', () => {
     expect(data.tmean).toEqual([5]);
   });
 
+  it('bağlantı hatasında da tekrar dener', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce(new Response(JSON.stringify(response(['2020-01-01'], [5]))));
+    const sleep = vi.fn().mockResolvedValue(undefined);
+    const data = await fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-01', fetchImpl, sleep });
+    expect(data.tmean).toEqual([5]);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
   it('deneme hakkı bitince 429 hatası fırlatır', async () => {
     const fetchImpl = vi.fn().mockImplementation(() => Promise.resolve(new Response('limit', { status: 429 })));
     const sleep = vi.fn().mockResolvedValue(undefined);
@@ -147,7 +158,7 @@ describe('parseOpenMeteo & fetchClimate', () => {
 
   it('HTTP hatasını iletir', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(new Response('down', { status: 500 }));
-    await expect(fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-02', fetchImpl })).rejects.toThrow('500');
+    await expect(fetchClimate(CITIES[0], { start: '2020-01-01', end: '2020-01-02', fetchImpl, pauseMs: 0 })).rejects.toThrow('500');
   });
 });
 

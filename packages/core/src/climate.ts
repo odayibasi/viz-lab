@@ -94,6 +94,7 @@ export async function fetchClimate(
     /** 429 (dakikalık limit) gelirse kaç kez bekleyip tekrar denensin */
     retries = 6,
     retryDelayMs = 61_000,
+    pauseMs = 3_000,
     sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms)),
     onRetry = (_attempt: number, _reason: string) => {},
   } = {},
@@ -111,8 +112,18 @@ export async function fetchClimate(
       timezone: 'auto',
     }).toString();
     // Not: Open-Meteo uzun aralıkları birden çok "istek" sayar; dakikalık limite takılırsa bekleyip tekrar dener.
+    if (parts.length) await sleep(pauseMs); // parçalar arasında kısa ara: dakikalık limite yaklaşma
     for (let attempt = 0; ; attempt++) {
-      const res = await fetchImpl(url.toString(), { headers: { 'user-agent': 'viz-lab' } });
+      let res: Response;
+      try {
+        res = await fetchImpl(url.toString(), { headers: { 'user-agent': 'viz-lab' } });
+      } catch (err) {
+        // Bağlantı hatası / zaman aşımı: geçici olabilir, bekle ve tekrar dene
+        if (attempt >= retries) throw err;
+        onRetry(attempt + 1, String((err as Error).cause ?? err));
+        await sleep(retryDelayMs);
+        continue;
+      }
       if (res.status === 429 && attempt < retries) {
         onRetry(attempt + 1, await res.text());
         await sleep(retryDelayMs);
